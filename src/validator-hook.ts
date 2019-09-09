@@ -4,10 +4,10 @@ import AsyncValidator, { Rules, RuleItem, ValidateSource, ErrorList } from 'asyn
 export { ErrorList } from 'async-validator'
 
 // Action
-export type FiledInputEvent = 'blur' | 'change'
+export type FieldInputEvent = 'blur' | 'change'
 export interface FieldInputAction<K = string> {
   name: K
-  event: FiledInputEvent
+  event: FieldInputEvent
   value: any
 }
 export interface FieldStateAction {
@@ -23,14 +23,17 @@ export interface FieldModel<K = string> {
   errors?: ErrorList
   dispatch: Dispatch<FieldInputAction<K>>
 }
+export interface FieldInputProps {
+  model?: FieldModel
+}
 export type ModelMap<K = string> = Map<K, FieldModel<K>>
 
 // Extend Rules
-export interface FiledRuleItem extends RuleItem {
-  target?: FiledInputEvent
+export interface FieldRuleItem extends RuleItem {
+  target?: FieldInputEvent
 }
-export interface FiledRules extends Rules {
-  [field: string]: FiledRuleItem | FiledRuleItem[]
+export interface FieldRules extends Rules {
+  [field: string]: FieldRuleItem | FieldRuleItem[]
 }
 
 /**
@@ -43,7 +46,7 @@ export interface FiledRules extends Rules {
 export interface useValidator {
   <S = ValidateSource>(
     initState: S,
-    rules: FiledRules,
+    rules: FieldRules,
     callback: (state: S) => void,
     errorCallback?: (error: Map<string, ErrorList>) => void
     ): [ModelMap<keyof S>, () => void]
@@ -51,19 +54,19 @@ export interface useValidator {
 
 export const useValidator: useValidator = <S>(
   state: S,
-  rules: FiledRules,
+  rules: FieldRules,
   callback: (state: S) => void,
   errorCallback?: (error: Map<string, ErrorList>) => void
 ): [ModelMap<keyof S>, () => void] => {
-  type FileName = keyof S
-  type ErrorMap = Map<FileName, ErrorList>
+  type FieldName = keyof S
+  type ErrorMap = Map<FieldName, ErrorList>
   const [errorMap, setErrorMap] = useState<ErrorMap>(new Map())
 
   /**
-   * memoized filed rule is matching event
+   * memoized field rule is matching event
    */
-  const isValidate = useCallback((filed: FileName, event: FiledInputEvent) => {
-    const rule = rules[filed as string]
+  const isValidate = useCallback((field: FieldName, event: FieldInputEvent) => {
+    const rule = rules[field as string]
     let ruleList = Array.isArray(rule) ? rule : [rule]
     let validate = false
     ruleList.forEach((config) => {
@@ -79,17 +82,17 @@ export const useValidator: useValidator = <S>(
    * memoized validate exection
    */
   const onValidation = useCallback((source: ValidateSource) => {
-    const filedNames = Object.keys(source)
-    const filterRules: FiledRules = {}
-    for (let fileName of filedNames) {
-      filterRules[fileName] = rules[fileName]
+    const fieldNames = Object.keys(source)
+    const filterRules: FieldRules = {}
+    for (let fieldName of fieldNames) {
+      filterRules[fieldName] = rules[fieldName]
     }
     const validator = new AsyncValidator(filterRules)
     return validator.validate(source, {}, (errors, fields) => {
       setErrorMap((errorMap) => {
         const fieldErrors = fields || {}
-        for (let fileName of filedNames) {
-          errorMap.set(fileName as FileName, fieldErrors[fileName])
+        for (let fieldName of fieldNames) {
+          errorMap.set(fieldName as FieldName, fieldErrors[fieldName])
         }
         return new Map(errorMap)
       })
@@ -99,7 +102,7 @@ export const useValidator: useValidator = <S>(
   /**
    * memoized reducer callback
    */
-  const reducerCallback = useCallback((prevState: S, action: FieldAction<FileName>) => {
+  const reducerCallback = useCallback((prevState: S, action: FieldAction<FieldName>) => {
     // validate & update state
     switch (action.event) {
       case 'change':
@@ -124,18 +127,18 @@ export const useValidator: useValidator = <S>(
 
     return prevState
   }, [ isValidate, onValidation, callback, errorCallback ])
-  const [reducerState, dispatch] = useReducer<Reducer<S, FieldAction<FileName>>>(reducerCallback, state)
+  const [reducerState, dispatch] = useReducer<Reducer<S, FieldAction<FieldName>>>(reducerCallback, state)
 
-  const modelMap: ModelMap<FileName> = new Map()
-  const filedNames = Object.keys(reducerState) as Array<FileName>
-  for (let filedName of filedNames) {
-    const fileModel: FieldModel<FileName> = {
-      name: filedName,
-      value: reducerState[filedName],
-      errors: errorMap.get(filedName),
+  const modelMap: ModelMap<FieldName> = new Map()
+  const fieldNames = Object.keys(reducerState) as Array<FieldName>
+  for (let fieldName of fieldNames) {
+    const fieldModel: FieldModel<FieldName> = {
+      name: fieldName,
+      value: reducerState[fieldName],
+      errors: errorMap.get(fieldName),
       dispatch,
     }
-    modelMap.set(filedName, fileModel)
+    modelMap.set(fieldName, fieldModel)
   }
 
   const submitHandle = useCallback(() => dispatch({ event: 'submit' }), [dispatch])

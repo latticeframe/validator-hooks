@@ -3,10 +3,10 @@ import AsyncValidator from 'async-validator';
 export const useValidator = (state, rules, callback, errorCallback) => {
     const [errorMap, setErrorMap] = useState(new Map());
     /**
-     * memoized filed rule is matching event
+     * memoized field rule is matching event
      */
-    const isValidate = useCallback((filed, event) => {
-        const rule = rules[filed];
+    const isValidate = useCallback((field, event) => {
+        const rule = rules[field];
         let ruleList = Array.isArray(rule) ? rule : [rule];
         let validate = false;
         ruleList.forEach((config) => {
@@ -21,17 +21,17 @@ export const useValidator = (state, rules, callback, errorCallback) => {
      * memoized validate exection
      */
     const onValidation = useCallback((source) => {
-        const filedNames = Object.keys(source);
+        const fieldNames = Object.keys(source);
         const filterRules = {};
-        for (let fileName of filedNames) {
-            filterRules[fileName] = rules[fileName];
+        for (let fieldName of fieldNames) {
+            filterRules[fieldName] = rules[fieldName];
         }
         const validator = new AsyncValidator(filterRules);
         return validator.validate(source, {}, (errors, fields) => {
             setErrorMap((errorMap) => {
                 const fieldErrors = fields || {};
-                for (let fileName of filedNames) {
-                    errorMap.set(fileName, fieldErrors[fileName]);
+                for (let fieldName of fieldNames) {
+                    errorMap.set(fieldName, fieldErrors[fieldName]);
                 }
                 return new Map(errorMap);
             });
@@ -48,7 +48,7 @@ export const useValidator = (state, rules, callback, errorCallback) => {
                 if (isValidate(action.name, action.event)) {
                     onValidation({ [action.name]: action.value });
                 }
-                return Object.assign(Object.assign({}, prevState), { [action.name]: action.value });
+                return Object.assign({}, prevState, { [action.name]: action.value });
             default:
         }
         // validate all state
@@ -65,15 +65,15 @@ export const useValidator = (state, rules, callback, errorCallback) => {
     }, [isValidate, onValidation, callback, errorCallback]);
     const [reducerState, dispatch] = useReducer(reducerCallback, state);
     const modelMap = new Map();
-    const filedNames = Object.keys(reducerState);
-    for (let filedName of filedNames) {
-        const fileModel = {
-            name: filedName,
-            value: reducerState[filedName],
-            errors: errorMap.get(filedName),
+    const fieldNames = Object.keys(reducerState);
+    for (let fieldName of fieldNames) {
+        const fieldModel = {
+            name: fieldName,
+            value: reducerState[fieldName],
+            errors: errorMap.get(fieldName),
             dispatch,
         };
-        modelMap.set(filedName, fileModel);
+        modelMap.set(fieldName, fieldModel);
     }
     const submitHandle = useCallback(() => dispatch({ event: 'submit' }), [dispatch]);
     return [modelMap, submitHandle];

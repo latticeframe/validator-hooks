@@ -1,4 +1,9 @@
-import { useValidator, FiledRules, FieldModel, ModelMap, ErrorList } from './dist/validator-hook'
-
-export { useValidator, FiledRules, FieldModel, ModelMap, ErrorList }
-export default useValidator
+export {
+  useValidator as default,
+  useValidator,
+  FieldRules,
+  FieldModel,
+  FieldInputProps,
+  ModelMap,
+  ErrorList
+} from './dist/validator-hook'
