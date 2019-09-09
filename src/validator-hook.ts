@@ -40,8 +40,8 @@ export interface FiledRules extends Rules {
  * @param callback
  * @param errorCallback
  */
-export interface useValidator<S = ValidateSource> {
-  (
+export interface useValidator {
+  <S = ValidateSource>(
     initState: S,
     rules: FiledRules,
     callback: (state: S) => void,
@@ -100,7 +100,6 @@ export const useValidator: useValidator = <S>(
    * memoized reducer callback
    */
   const reducerCallback = useCallback((prevState: S, action: FieldAction<FileName>) => {
-    console.log('dispatch', action)
     // validate & update state
     switch (action.event) {
       case 'change':
@@ -116,9 +115,9 @@ export const useValidator: useValidator = <S>(
     if (action.event === 'submit') {
       onValidation(prevState)
         .then(() => callback(prevState))
-        .catch(({fileds}) => {
+        .catch(({fields}) => {
           if (errorCallback) {
-            errorCallback(fileds)
+            errorCallback(fields)
           }
         })
     }

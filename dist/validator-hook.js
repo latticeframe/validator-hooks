@@ -41,7 +41,6 @@ export const useValidator = (state, rules, callback, errorCallback) => {
      * memoized reducer callback
      */
     const reducerCallback = useCallback((prevState, action) => {
-        console.log('dispatch', action);
         // validate & update state
         switch (action.event) {
             case 'change':
@@ -49,16 +48,16 @@ export const useValidator = (state, rules, callback, errorCallback) => {
                 if (isValidate(action.name, action.event)) {
                     onValidation({ [action.name]: action.value });
                 }
-                return Object.assign({}, prevState, { [action.name]: action.value });
+                return Object.assign(Object.assign({}, prevState), { [action.name]: action.value });
             default:
         }
         // validate all state
         if (action.event === 'submit') {
             onValidation(prevState)
                 .then(() => callback(prevState))
-                .catch(({ fileds }) => {
+                .catch(({ fields }) => {
                 if (errorCallback) {
-                    errorCallback(fileds);
+                    errorCallback(fields);
                 }
             });
         }

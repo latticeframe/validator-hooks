@@ -32,8 +32,8 @@ export interface FiledRules extends Rules {
  * @param callback
  * @param errorCallback
  */
-export interface useValidator<S = ValidateSource> {
-    (initState: S, rules: FiledRules, callback: (state: S) => void, errorCallback?: (error: Map<string, ErrorList>) => void): [ModelMap<keyof S>, () => void];
+export interface useValidator {
+    <S = ValidateSource>(initState: S, rules: FiledRules, callback: (state: S) => void, errorCallback?: (error: Map<string, ErrorList>) => void): [ModelMap<keyof S>, () => void];
 }
 export declare const useValidator: useValidator;
 //# sourceMappingURL=validator-hook.d.ts.map
