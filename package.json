@@ -1,7 +1,6 @@
 {
   "name": "@latticeframe/validator-hooks",
   "version": "0.0.1",
-  "private": true,
   "dependencies": {
     "async-validator": "^3.0.4"
   },
