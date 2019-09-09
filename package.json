@@ -1,6 +1,6 @@
 {
   "name": "@latticeframe/validator-hooks",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "async-validator": "^3.0.4"
   },
@@ -38,7 +38,7 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }, 
+  },
   "files": [
     "index.js",
     "index.d.ts",
